@@ -3,7 +3,6 @@ Content-Type: application/json
 
 {
   "userData": {
-    "name" : "ME Alive again but new",
-    "imageSrc" : ""
+    "nickName" : "ME Alive again but new"
   }
 }
