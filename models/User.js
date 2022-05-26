@@ -1,13 +1,11 @@
 const path = require('path');
 const fs = require('fs').promises;
-const { readFileOpts } = require('../config/db.json');
+const { getDbAsArray, updateDb } = require('../utils/modelUtils');
 
 const dbPath = path.resolve(__dirname, '../', 'db/', 'users.json');
 class User {
   static async create(userData) {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+    const users = await getDbAsArray(dbPath);
 
     const newUser = {
       ...userData,
@@ -28,17 +26,13 @@ class User {
 
     users.push(newUser);
 
-    const newUserData = JSON.stringify(users, null, 2);
-
-    await fs.writeFile(dbPath, newUserData);
+    await updateDb(dbPath, users);
 
     return userWithoutPassword;
   }
 
   static async getAll() {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+    const users = await getDbAsArray(dbPath);
 
     return users.map((user) => {
       const { password, ...userWithoutPassword } = user;
@@ -48,9 +42,7 @@ class User {
   }
 
   static async get(id) {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+    const users = await getDbAsArray(dbPath);
 
     const user = users.find((user) => user.id === +id);
 
@@ -59,13 +51,13 @@ class User {
       error.code = 404;
       throw error;
     }
+
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 
   static async getByEmail(email) {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+    const users = await getDbAsArray(dbPath);
 
     const user = users.find((user) => {
       const res = user.email.toLowerCase() === email.toLowerCase();
@@ -82,9 +74,8 @@ class User {
     return user;
   }
 
-  static async update({userData, id}) {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+  static async update({ userData, id }) {
+    const users = await getDbAsArray(dbPath);
 
     const userIndex = users.findIndex((user) => user.id === +id);
 
@@ -96,22 +87,18 @@ class User {
 
     const newUsers = users.map((user, index) => {
       const isSameUser = index === userIndex;
-
       const updatedUser = isSameUser ? { ...user, ...userData } : { ...user };
       return updatedUser;
     });
 
-    const newUserData = JSON.stringify(newUsers, null, 2);
+    await updateDb(dbPath, newUsers);
 
-    await fs.writeFile(dbPath, newUserData);
     const { password, ...userWithoutPassword } = newUsers[userIndex];
     return userWithoutPassword;
   }
 
   static async remove(id) {
-    const usersDataString = await fs.readFile(dbPath, readFileOpts);
-
-    const users = JSON.parse(usersDataString ? usersDataString : '[]');
+    const users = await getDbAsArray(dbPath);
 
     const userIndex = users.findIndex((user) => user.id === +id);
 
@@ -123,9 +110,7 @@ class User {
 
     const newUsers = users.filter((user) => user.id !== +id);
 
-    const newUserData = JSON.stringify(newUsers, null, 2);
-
-    await fs.writeFile(dbPath, newUserData);
+    await updateDb(dbPath, newUsers);
 
     return id;
   }
