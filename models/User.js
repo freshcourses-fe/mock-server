@@ -24,13 +24,15 @@ class User {
       throw error;
     }
 
+    const { password, ...userWithoutPassword } = newUser;
+
     users.push(newUser);
 
     const newUserData = JSON.stringify(users, null, 2);
 
     await fs.writeFile(dbPath, newUserData);
 
-    return newUser;
+    return userWithoutPassword;
   }
 
   static async getAll() {
@@ -38,7 +40,11 @@ class User {
 
     const users = JSON.parse(usersDataString ? usersDataString : '[]');
 
-    return users;
+    return users.map((user) => {
+      const { password, ...userWithoutPassword } = user;
+
+      return userWithoutPassword;
+    });
   }
 
   static async get(id) {
@@ -53,8 +59,8 @@ class User {
       error.code = 404;
       throw error;
     }
-
-    return user;
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   static async getByEmail(email) {
@@ -76,7 +82,7 @@ class User {
     return user;
   }
 
-  static async update(userData, id) {
+  static async update({userData, id}) {
     const usersDataString = await fs.readFile(dbPath, readFileOpts);
     const users = JSON.parse(usersDataString ? usersDataString : '[]');
 
@@ -98,8 +104,8 @@ class User {
     const newUserData = JSON.stringify(newUsers, null, 2);
 
     await fs.writeFile(dbPath, newUserData);
-
-    return updatedUsers[userIndex];
+    const { password, ...userWithoutPassword } = newUsers[userIndex];
+    return userWithoutPassword;
   }
 
   static async remove(id) {

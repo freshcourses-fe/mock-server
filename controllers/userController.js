@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User } = require('../models');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
@@ -41,7 +41,7 @@ module.exports.updateUser = async (req, res, next) => {
       body: { userData },
       params: { id },
     } = req;
-    const user = await User.update({ ...userData, id });
+    const user = await User.update({ userData, id });
 
     res.status(201).send({ data: user });
   } catch (error) {
@@ -71,10 +71,11 @@ module.exports.loginUser = async (req, res, next) => {
     const user = await User.getByEmail(email);
 
     if (user && user.password === password) {
-      return res.status(200).send({ data: user });
+      const { password, ...userWithoutPassword } = user;
+      return res.status(200).send({ data: userWithoutPassword });
     }
 
-    const error = new Error("No user with such data");
+    const error = new Error('No user with such data');
     error.code = 404;
     throw error;
   } catch (error) {
