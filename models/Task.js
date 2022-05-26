@@ -12,7 +12,6 @@ class Task {
       text,
       isDone: false,
     };
-    console.log(newTask);
 
     tasks.push(newTask);
 
